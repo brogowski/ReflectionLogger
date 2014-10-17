@@ -28,6 +28,9 @@ Logging mechanism is based on interface IMethodLogger.
 	var builder = new LoggedTypeBuilder();
 	var loggedClassInstance = builder.GetClass<MyClass>(mylogger);
 
+**Interfaces WARNING!**
+When using with interfaces cast result class to desired interface to invoke new methods otherwise base class imeplementation methods will be called directly.
+
 *Sample MyClass:*
 
 
