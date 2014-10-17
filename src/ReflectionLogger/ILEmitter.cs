@@ -73,10 +73,8 @@ namespace ReflectionLogger
         {                        
             ushort index = 1;
             while (index < parameters.Length + 1)
-            {
-                int i = index;
-                EmitCallLogger(il,
-                () => il.Emit(OpCodes.Ldarg, i),
+            {                
+                EmitCallLogger(index, il,
                 loggerField,
                 typeof(IMethodLogger).GetMethod("LogParameter")
                     .MakeGenericMethod(new[] {parameters[index - 1]}));
@@ -86,25 +84,38 @@ namespace ReflectionLogger
 
         private void EmitLogReturn(ILGenerator il, MethodInfo methodInfo, LocalBuilder local, FieldBuilder loggerField)
         {
-            EmitCallLogger(il,
-                () => il.Emit(OpCodes.Ldloc_S, local),
+            EmitCallLogger(local, il,
                 loggerField, typeof(IMethodLogger).GetMethod("LogReturn")
                     .MakeGenericMethod(new[] { methodInfo.ReturnType }));
         }
 
         private void EmitLogMessage(ILGenerator il, string message, FieldBuilder loggerField)
         {            
-            EmitCallLogger(il,
-                () => il.Emit(OpCodes.Ldstr, message),
-                loggerField,
+            EmitCallLogger(message, il, loggerField,
                 typeof (IMethodLogger).GetMethod("Log", new[] {typeof (string)}));
         }
 
-        private void EmitCallLogger(ILGenerator il, Action emitLogArgument, FieldBuilder loggerField, MethodInfo loggerMethod)
+        private void EmitCallLogger(string message, ILGenerator il, FieldBuilder loggerField, MethodInfo loggerMethod)
         {
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldfld, loggerField);
-            emitLogArgument.Invoke();
+            il.Emit(OpCodes.Ldstr, message);
+            il.Emit(OpCodes.Call, loggerMethod);            
+        }
+
+        private void EmitCallLogger(int argumentIndex, ILGenerator il, FieldBuilder loggerField, MethodInfo loggerMethod)
+        {
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, loggerField);
+            il.Emit(OpCodes.Ldarg, argumentIndex);            
+            il.Emit(OpCodes.Call, loggerMethod);
+        }
+
+        private void EmitCallLogger(LocalBuilder local, ILGenerator il, FieldBuilder loggerField, MethodInfo loggerMethod)
+        {
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldfld, loggerField);
+            il.Emit(OpCodes.Ldloc_S, local);
             il.Emit(OpCodes.Call, loggerMethod);
         }
     }

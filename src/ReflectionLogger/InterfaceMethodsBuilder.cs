@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -40,13 +39,22 @@ namespace ReflectionLogger
 
         private IEnumerable<MethodInfo> GetFinalVirtualMethods(Type type)
         {
-            return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                .Where(q => q.IsVirtual && q.IsFinal);
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            {
+                if (method.IsVirtual && method.IsFinal)
+                    yield return method;
+            }                        
         }
 
         private Type[] GetMethodParametersTypes(MethodInfo virtualMethodInfo)
         {
-            return virtualMethodInfo.GetParameters().Select(q => q.ParameterType).ToArray();
+            var parameters = virtualMethodInfo.GetParameters();
+            var types = new Type[parameters.Length];
+            for (int index = 0; index < parameters.Length; index++)
+            {
+                types[index] = parameters[index].ParameterType;
+            }
+            return types;
         }
 
         private MethodBuilder DefineNewInterfaceMethod(TypeBuilder builder, MethodInfo virtualMethodInfo, Type[] parameters)
