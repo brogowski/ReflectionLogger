@@ -6,6 +6,8 @@ Class builded by ReflectionLogger have logged every virtual method and every int
 
 ReflectionLogger builds classes on runtime based on type provided.
 
+**Supported Framework: .NET 2.0+**
+
 **Supported classes:**
 -	Only non sealed and public classes.
 
